@@ -1,14 +1,8 @@
-# SingleHTML5Generator
+Cocos Creator 2.4.0 Playable Generator
+===========================
 
-Generates single index.html from Cocos Creator project<br/>
-Based on https://github.com/mrsep18th/single_html5_generator
+## 使用方法
 
-CocosCreator version 2.4.0. You also need Python3
-
-Instructions:
-1. Copy build-templates and html_generator to your project folder
-2. Build cocos project with settings:<br/>
-platform: Web Mobile<br/>
-Inline all SpriteFrames: uncheck
-3. Run html_generator/generate_single_html.py (or call "py html_generator/generate_single_html.py True" to compress images with tinify)
-4. Result: html_generator/index.html
+1. install Python3
+2. 使用 "py generate_with_tinify_pic.py", 先压缩图片, 然后再生成, 但需要自行获取 apikey
+3. 使用 "py generate_normal.py", 直接生成
