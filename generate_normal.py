@@ -1,12 +1,14 @@
+# -*- coding:utf-8 -*-
 #!/usr/bin/python3
 
 import os
-import time
 import sys
 from html.parser import HTMLParser
 import base64
+import chardet
 import simplejson
 import math
+from shutil import copyfile
 
 if sys.getdefaultencoding() != 'utf-8':
     reload(sys)
@@ -17,13 +19,15 @@ mainMatchKey = '{#main}'
 engineMatchKey = '{#cocosengine}'
 projectMatchKey = '{#project}'
 resMapMatchKey = '{#resMap}'
-ttfMapMatchKey = '{#ttfMap}'
+# ttfMapMatchKey = '{#ttfMap}'
+indexInternalKey = "{#indexInternal}"
 
 fileByteList = ['.png', '.jpg', '.mp3', '.ttf', '.plist', 'txt']
 
 base64PrefixList = {
   '.png' : 'data:image/png;base64,',
   '.jpg' : 'data:image/jpeg;base64,',
+  '.webp' : 'data:image/webp;base64,',
   '.mp3' : '',
   '.ttf' : '',
   '.plist' : 'data:text/plist;base64,'
@@ -31,7 +35,11 @@ base64PrefixList = {
 
 def read_in_chunks(filePath):
     extName = os.path.splitext(filePath)[1]
-    if extName in fileByteList:
+    if extName == '.webp':
+        with open(filePath, 'rb') as f:
+            b64bytes = base64.b64encode(f.read())
+            return base64PrefixList[extName] + b64bytes.decode()
+    elif extName in fileByteList:
         file_object = open(filePath, 'rb')
         base64Str = base64.b64encode(file_object.read())
         base64Prefix = base64PrefixList[extName]
@@ -41,7 +49,11 @@ def read_in_chunks(filePath):
     elif extName == '':
         return None
 
-    file_object = open(filePath, encoding='utf-8')
+    file_temp = open(filePath, "rb")
+    result = chardet.detect(file_temp.read())
+    encoding = result['encoding']
+
+    file_object = open(filePath, encoding=encoding, errors='ignore')
     return file_object.read()
 
 def writeToPath(path, data):
@@ -78,13 +90,20 @@ def addPlistSupport(mainStr):
 
 def integrate(projectRootPath):
     htmlPath = projectRootPath + '/build/web-mobile/index.html'
-    newHtmlPath = './index.html'
+    newHtmlPath = os.getcwd() + "/playable/index.html"
     settingScrPath = projectRootPath + '/build/web-mobile/src/settings.js'
     mainScrPath = projectRootPath + '/build/web-mobile/main.js'
     engineScrPath = projectRootPath + '/build/web-mobile/cocos2d-js-min.js'
     projectScrPath = projectRootPath + '/build/web-mobile/assets/main/index.js'
     resPath = projectRootPath + '/build/web-mobile/assets'
     indexInternalScrPath = projectRootPath + '/build/web-mobile/assets/internal/index.js'
+
+    projectNamePath = os.getcwd() + "/projectName.txt"
+    projectNameOriginKey = "Cocos Creator | hello_world"
+
+    # 自动复制模版到打包目录
+    print("copy html", copyfile('./template/index.html', htmlPath))
+    print("copy main.js", copyfile('./template/main.js', mainScrPath))
 
     htmlStr = read_in_chunks(htmlPath)
     settingsStr = read_in_chunks(settingScrPath)
@@ -104,6 +123,18 @@ def integrate(projectRootPath):
     resStr = getResMapScript(resPath)
     htmlStr = htmlStr.replace(resMapMatchKey, resStr, 1)
 
+    # 替换项目名
+    projectName = read_in_chunks(projectNamePath)
+    htmlStr = htmlStr.replace(projectNameOriginKey, projectName, 1)
+
+    # 清除未使用的替换符
+    # htmlStr = htmlStr.replace(ttfMapMatchKey, '', 1)
+    htmlStr = htmlStr.replace(indexInternalKey, '', 1)
+
+    # 写入新 HTML
+    dirName = os.path.dirname(newHtmlPath)
+    if os.path.exists(dirName) == False:
+        os.makedirs(dirName)
     writeToPath(newHtmlPath, htmlStr)
 
     targetFileSize = os.path.getsize(newHtmlPath)

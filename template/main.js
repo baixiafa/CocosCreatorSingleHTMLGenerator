@@ -329,6 +329,7 @@
         cc.assetManager.downloader.register('.png', loadImage);
         cc.assetManager.downloader.register('.jpg', loadImage);
         cc.assetManager.downloader.register('.jpeg', loadImage);
+        cc.assetManager.downloader.register('.webp', loadImage);
         cc.assetManager.downloader.register('.mp3', loadAudio);
         cc.assetManager.downloader.register('.ogg', loadAudio);
         cc.assetManager.downloader.register('.wav', loadAudio);

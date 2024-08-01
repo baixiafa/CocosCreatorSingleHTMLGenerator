@@ -1,19 +1,16 @@
 #!/usr/bin/python3
 
 import tinify
-import sys
-from os import path
 import os
-import os.path
   
 # Please reset the root directory Path !  
 ImageFilePath = "build/web-mobile/assets"
 
-apiKey = ""
+apiKey = "GRJ2NhGy1NzDnK4ky7Wg5dYWMVMVMpP6"
 assert len(apiKey) > 0, "API KEY is necessary, goto https://tinypng.com, sign up and get your own."
 tinify.key = apiKey
 
-fileType = [".png", ".jpg"]
+fileType = [".png", ".jpg", ".webp"]
   
 def isSupportedFile(filename):
     name, ext = os.path.splitext(filename)
